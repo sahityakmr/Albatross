@@ -6,8 +6,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
 
-dataset = pd.read_csv('iris.data', sep=',', header=None)
-data = dataset.iloc[:, :]
+data = pd.read_csv('iris.data', sep=',', header=None)
 print("Sum of NULL values in each column : ")
 print(data.isnull().sum())
 
