@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def initialize_input_weights(training_samples):
@@ -44,6 +45,36 @@ def predict(weight, intercept, input):
     return np.where(prediction > 0.5, 1., 0.)
 
 
+def plot_learning_rate():
+    costs = np.squeeze(d['costs'])
+    plt.plot(costs)
+    plt.ylabel('cost')
+    plt.xlabel('iterations (per hundreds)')
+    plt.title("Learning rate =" + str(d["learning_rate"]))
+    plt.show()
+
+
+def learning_rate_analysis(train_input, train_output, test_input, test_output):
+    learning_rates = [0.01, 0.001, 0.0001]
+    models = {}
+    for i in learning_rates:
+        print("learning rate is: " + str(i))
+        models[str(i)] = build_model(train_input, train_output, test_input, test_output, num_iterations=1500,
+                                     learning_rate=i)
+        print('\n' + "-------------------------------------------------------" + '\n')
+
+    for i in learning_rates:
+        plt.plot(np.squeeze(models[str(i)]["costs"]), label=str(models[str(i)]["learning_rate"]))
+
+    plt.ylabel('cost')
+    plt.xlabel('iterations (hundreds)')
+
+    legend = plt.legend(loc='upper center', shadow=True)
+    frame = legend.get_frame()
+    frame.set_facecolor('0.90')
+    plt.show()
+
+
 def build_model(train_input, train_output, test_input, test_output, iterations, learning_rate):
     training_samples = train_input.shape[0]
 
@@ -56,6 +87,16 @@ def build_model(train_input, train_output, test_input, test_output, iterations, 
 
     print("train accuracy: {} %".format(100 - np.mean(np.abs(prediction_train - train_output)) * 100))
     print("test accuracy: {} %".format(100 - np.mean(np.abs(prediction_test - test_output)) * 100))
+
+    d = {"costs": costs,
+         "Y_prediction_test": Y_prediction_test,
+         "Y_prediction_train": Y_prediction_train,
+         "w": w,
+         "b": b,
+         "learning_rate": learning_rate,
+         "num_iterations": num_iterations}
+
+    return d
 
 
 if __name__ == "__main__":
