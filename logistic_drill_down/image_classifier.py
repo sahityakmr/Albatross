@@ -45,7 +45,7 @@ def predict(weight, intercept, input):
     return np.where(prediction > 0.5, 1., 0.)
 
 
-def plot_learning_rate():
+def plot_learning_rate(d):
     costs = np.squeeze(d['costs'])
     plt.plot(costs)
     plt.ylabel('cost')
@@ -89,12 +89,12 @@ def build_model(train_input, train_output, test_input, test_output, iterations, 
     print("test accuracy: {} %".format(100 - np.mean(np.abs(prediction_test - test_output)) * 100))
 
     d = {"costs": costs,
-         "Y_prediction_test": Y_prediction_test,
-         "Y_prediction_train": Y_prediction_train,
-         "w": w,
-         "b": b,
+         "prediction_test": prediction_test,
+         "prediction_train": prediction_train,
+         "w": weight,
+         "b": intercept,
          "learning_rate": learning_rate,
-         "num_iterations": num_iterations}
+         "num_iterations": iterations}
 
     return d
 
