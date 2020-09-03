@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from neural_network.single_neuron import LogisticRegression
 
 
 def initialize_input_weights(training_samples):
@@ -76,9 +77,13 @@ def learning_rate_analysis(train_input, train_output, test_input, test_output):
 
 
 def build_model(train_input, train_output, test_input, test_output, iterations, learning_rate):
-    training_samples = train_input.shape[0]
+    # pixel count of the image
+    feature_count = train_input.shape[0]
 
-    weight, intercept = initialize_input_weights(training_samples)
+    # initialize weight array of shape(feature_count, 1) and an intercept to 0
+    weight, intercept = initialize_input_weights(feature_count)
+
+    # get the optimized weight and intercept
     weight, intercept, gradient_descent, costs = train_model(train_input, train_output, weight, intercept, iterations,
                                                              learning_rate)
 
@@ -107,12 +112,27 @@ if __name__ == "__main__":
     test_size = int(dataset_size * test_size)
     train_size = dataset_size - test_size
 
-    train_input = np.random.random((vector_size, train_size))
-    test_input = np.random.random((vector_size, train_size))
-    train_output = np.where(np.random.random((1, train_size)) > 0.5, 1, 0)
-    test_output = np.where(np.random.random((1, train_size)) > 0.5, 1, 0)
-    iterations = 10000
-    learning_rate = 0.3
-    log_cost = True
+    train_input = None
+    test_input = None
+    train_output = None
+    test_output = None
+    iterations = None
+
+
+    def get_random_data():
+        global train_input, test_input, train_output, test_output, iterations
+        train_input = np.random.randint(1, 255, size=(vector_size, train_size))/255
+        test_input = np.random.randint(1, 255, size=(vector_size, train_size))
+        train_output = np.where(np.random.random((1, train_size)) > 0.5, 1, 0)/255
+        test_output = np.where(np.random.random((1, train_size)) > 0.5, 1, 0)
+        iterations = 2000
+
+
+    learning_rate = 0.05
+    get_random_data()
+
+    print(train_input)
 
     build_model(train_input, train_output, test_input, test_output, iterations, learning_rate)
+    lr = LogisticRegression()
+    lr.fit(train_input, train_output)
