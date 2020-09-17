@@ -36,8 +36,8 @@ class LogisticRegression:
         self.train_x = train_x
         self.train_y = train_y
 
-        self.__initialize_parameters()
         self.__set_hyper_parameters(learning_rate, iterations, log_cost, log_step)
+        self.__initialize_parameters()
 
         self.__train()
 
@@ -48,14 +48,14 @@ class LogisticRegression:
     def __train(self):
         self.cost_list = list()
 
-        for i in range(self.iterations + 1):
+        for i in range(self.iterations):
             self.__propagate()
             self.__gradient_descent()
 
-            if i % self.log_step == 0:
+            if (i + 1) % self.log_step == 0:
                 self.cost_list.append(self.curr_cost)
                 if self.log_cost:
-                    print("Cost after %i iterations : %f" % (i, self.curr_cost))
+                    print("Cost after %i iterations : %f" % (i + 1, self.curr_cost))
         self.train_accuracy = 100 - np.mean(np.abs(self.predict(self.train_x) - self.train_y) * 100)
         self.log_training_response()
 
