@@ -134,5 +134,6 @@ if __name__ == "__main__":
     print(train_input)
 
     build_model(train_input, train_output, test_input, test_output, iterations, learning_rate)
+
     lr = LogisticRegression()
     lr.fit(train_input, train_output)

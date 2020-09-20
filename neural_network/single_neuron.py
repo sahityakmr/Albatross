@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from neural_network.driver import load_data
+import pickle
 
 
 def sigmoid_activation(input):
@@ -18,11 +20,11 @@ class LogisticRegression:
         self.sample_size = None
         self.train_x = None
         self.train_y = None
+        self.orig_train_x = None
 
     def __initialize_parameters(self):
         self.weight = np.zeros((1, self.feature_size))
         self.bias = 0
-        pass
 
     def __set_hyper_parameters(self, learning_rate, iterations, log_cost, log_step):
         self.learning_rate = learning_rate
@@ -33,16 +35,18 @@ class LogisticRegression:
     def fit(self, train_x, train_y, learning_rate=0.05, iterations=2000, log_cost=True, log_step=100):
         self.feature_size = train_x.shape[FEATURE_SIZE_INDEX]
         self.sample_size = train_x.shape[SAMPLE_SIZE_INDEX]
-        self.train_x = train_x
+        self.orig_train_x = train_x
+        self.train_x = LogisticRegression.standardize_input(train_x)
         self.train_y = train_y
 
         self.__set_hyper_parameters(learning_rate, iterations, log_cost, log_step)
         self.__initialize_parameters()
-
         self.__train()
 
-    def predict(self, test_x):
+    def predict(self, test_x, test_y):
+        test_x = LogisticRegression.standardize_input(test_x)
         predict_y = np.where(sigmoid_activation(np.dot(self.weight, test_x) + self.bias) > 0.5, 1, 0)
+        print("Accuracy : " + str(np.sum((predict_y == test_y) / test_x.shape[1])))
         return predict_y
 
     def __train(self):
@@ -52,11 +56,12 @@ class LogisticRegression:
             self.__propagate()
             self.__gradient_descent()
 
-            if (i + 1) % self.log_step == 0:
+            if i % self.log_step == 0:
                 self.cost_list.append(self.curr_cost)
                 if self.log_cost:
-                    print("Cost after %i iterations : %f" % (i + 1, self.curr_cost))
-        self.train_accuracy = 100 - np.mean(np.abs(self.predict(self.train_x) - self.train_y) * 100)
+                    print("Cost after %i iterations : %f" % (i, self.curr_cost))
+        self.train_accuracy = 100 - np.mean(np.abs(self.predict(self.orig_train_x, self.train_y) - self.train_y) * 100)
+
         self.log_training_response()
 
     def __propagate(self):
@@ -96,43 +101,42 @@ class LogisticRegression:
         plt.show()
         pass
 
-    def analyze_learning_rate(self, learning_rates=[0.01, 0.001, 0.0001]):
-        costs = list()
+    def analyze_learning_rate(self, learning_rates=(0.01, 0.001, 0.0001)):
         models = {}
-        model = LogisticRegression()
-        for lr in learning_rates:
-            model.fit(self.train_x, self.train_y, learning_rate=lr)
-        pass
+        for i in range(len(learning_rates)):
+            lr = learning_rates[i]
+            model = LogisticRegression()
+            model.fit(self.orig_train_x, self.train_y, learning_rate=lr)
+            models[str(i)] = model
+
+        for i in range(len(learning_rates)):
+            model = models[str(i)]
+            plt.plot(np.squeeze(model.cost_list), label=str(model.learning_rate))
+            plt.ylabel('cost')
+            plt.xlabel('iterations (hundreds)')
+            legend = plt.legend(loc='upper right', shadow=True)
+            frame = legend.get_frame()
+            frame.set_facecolor('0.90')
+        plt.show()
+
+    pass
+
+    @staticmethod
+    def standardize_input(x):
+        return x / 255
 
 
 if __name__ == "__main__":
-    vector_size = 128
-    dataset_size = 10000
-    test_size = 0.3
-
-    test_size = int(dataset_size * test_size)
-    train_size = dataset_size - test_size
-
-    train_input = None
-    test_input = None
-    train_output = None
-    test_output = None
-    iterations = None
+    train_x, train_y, test_x, test_y, classes = load_data()
+    file_name = 'single_neuron.sav'
 
 
-    def get_random_data():
-        global train_input, test_input, train_output, test_output, iterations
-        train_input = np.random.randint(1, 255, size=(vector_size, train_size)) / 255
-        test_input = np.random.randint(1, 255, size=(vector_size, train_size))
-        train_output = np.where(np.random.random((1, train_size)) > 0.5, 1, 0) / 255
-        test_output = np.where(np.random.random((1, train_size)) > 0.5, 1, 0)
-        iterations = 2000
+    def train_n_save():
+        model: LogisticRegression = LogisticRegression()
+        model.fit(train_x, train_y, learning_rate=0.005)
+        pickle.dump(model, open(file_name, 'wb'))
 
 
-    learning_rate = 0.05
-    get_random_data()
-
-    print(train_input)
-
-    lr = LogisticRegression()
-    lr.fit(train_input, train_output)
+    # train_n_save()
+    model: LogisticRegression = pickle.load(open(file_name, 'rb'))
+    model.analyze_learning_rate((0.01, 0.001, 0.0001, 0.005))
